@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: ["ejeweb-production.up.railway.app"],
     proxy: {
       "/api": {
         target: "http://localhost:4000",
