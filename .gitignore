@@ -1,7 +1,37 @@
-node_modules
-dist
-build
+# Dependencies
+node_modules/
+
+# Environment variables
 .env
 .env.local
+.env.*.local
+
+# Prisma
+.prisma/
+*.mdl
+*.ql
+
+# Distribution
+dist/
+build/
+
+# Database
+*.sql
+
+# IDE / Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs
 *.log
+logs/
+
+# Runtime
+*.pid
+*.seed*
+
+# Misc
 .DS_Store
+.swp
+*.swo
