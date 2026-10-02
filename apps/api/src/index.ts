@@ -16,7 +16,24 @@ dotenv.config();
 
 const port = Number(process.env.PORT) || 4000;
 const jwtSecret = process.env.JWT_SECRET || "ritmo-super-secret-jwt-key-2026";
-const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+
+// Local development origins are always allowed as a fallback.
+const localOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+];
+
+// CLIENT_URL may hold one or more comma-separated production origins
+// (e.g. https://ejeweb-production.up.railway.app). Trailing slashes are stripped
+// because browsers send the Origin header without them.
+const clientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...clientOrigins, ...localOrigins]));
 
 const app = Fastify({
   logger: true,
@@ -25,13 +42,7 @@ const app = Fastify({
 async function main() {
   // Register CORS
   await app.register(fastifyCors, {
-    origin: [
-      clientUrl,
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://127.0.0.1:5173",
-      "http://127.0.0.1:5174",
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   });
@@ -44,13 +55,7 @@ async function main() {
   // Attach Socket.io to Fastify's raw HTTP server
   const io = new SocketIOServer(app.server, {
     cors: {
-      origin: [
-        clientUrl,
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-      ],
+      origin: allowedOrigins,
       credentials: true,
     },
   });
