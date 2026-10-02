@@ -1,0 +1,222 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PATIENT
+  CAREGIVER
+  PROFESSIONAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum MessageType {
+  TEXT
+  VOICE_NOTE_URL
+}
+
+enum EmotionalFirstAidTechnique {
+  BREATHING
+  MUSIC
+  PHOTOS
+}
+
+enum SymptomTag {
+  NO_SLEEP
+  HALLUCINATION
+  FOOD_REFUSAL
+  AGITATION
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime  @default(now())
+
+  patientProfile      PatientProfile?
+  caregiverProfile    CaregiverProfile?
+  professionalProfile ProfessionalProfile?
+
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+
+  @@map("users")
+}
+
+model PatientProfile {
+  id                    String    @id @default(uuid())
+  userId                String    @unique
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName              String
+  dateOfBirth           DateTime?
+  emergencyContactPhone String?
+
+  caregivers                CaregiverProfile[]
+  crisisAlerts              CrisisAlert[]
+  routines                  Routine[]
+  medicationSchedules       MedicationSchedule[]
+  medicationLogs            MedicationLog[]
+  emotionalFirstAidSessions EmotionalFirstAidSession[]
+  caregiverQuickLogs        CaregiverQuickLog[]
+
+  @@map("patient_profiles")
+}
+
+model CaregiverProfile {
+  id                String          @id @default(uuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName          String
+  relationToPatient String
+  patientId         String?
+  patient           PatientProfile? @relation(fields: [patientId], references: [id], onDelete: SetNull)
+
+  crisisAlerts CrisisAlert[]
+  quickLogs    CaregiverQuickLog[]
+
+  @@map("caregiver_profiles")
+}
+
+model ProfessionalProfile {
+  id            String @id @default(uuid())
+  userId        String @unique
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  licenseNumber String
+  specialty     String
+
+  @@map("professional_profiles")
+}
+
+model CrisisAlert {
+  id          String            @id @default(uuid())
+  patientId   String
+  patient     PatientProfile    @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caregiverId String?
+  caregiver   CaregiverProfile? @relation(fields: [caregiverId], references: [id], onDelete: SetNull)
+  status      AlertStatus       @default(ACTIVE)
+  triggeredAt DateTime          @default(now())
+  resolvedAt  DateTime?
+
+  @@map("crisis_alerts")
+}
+
+model Message {
+  id         String      @id @default(uuid())
+  senderId   String
+  sender     User        @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User        @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  type       MessageType @default(TEXT)
+  readAt     DateTime?
+  createdAt  DateTime    @default(now())
+
+  @@map("messages")
+}
+
+// ----------------------------------------------------
+// Ritmo: Modelos para Asistente Activo de Cuidado Diario
+// ----------------------------------------------------
+
+model Routine {
+  id        String         @id @default(uuid())
+  title     String
+  patientId String
+  patient   PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+
+  steps RoutineStep[]
+
+  @@map("routines")
+}
+
+model RoutineStep {
+  id              String  @id @default(uuid())
+  routineId       String
+  routine         Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  order           Int
+  instructionText String
+  imageUrl        String?
+  audioUrl        String?
+
+  @@map("routine_steps")
+}
+
+model MedicationSchedule {
+  id             String         @id @default(uuid())
+  patientId      String
+  patient        PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  timeOfDay      String         // Formato HH:mm (ej. "08:00", "20:00")
+  medicationName String
+  dosage         String?        // Dosis (ej: "1 comprimido de 1mg", "50mg")
+  instructions   String?        // Indicaciones del doctor para el cuidador
+  prescribedBy   String?        // Médico prescriptor (ej: "Dra. Sofía Martínez")
+  frequency      String?        // Frecuencia / Momento (ej: "Diario (Con el desayuno)")
+  imageUrl       String?        // Foto real de la pastilla
+  createdAt      DateTime       @default(now())
+
+  logs MedicationLog[]
+
+  @@map("medication_schedules")
+}
+
+model MedicationLog {
+  id                     String             @id @default(uuid())
+  scheduleId             String
+  schedule               MedicationSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  patientId              String
+  patient                PatientProfile     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  takenAt                DateTime           @default(now())
+  confirmedByDragAndDrop Boolean            @default(true)
+  createdAt              DateTime           @default(now())
+
+  @@map("medication_logs")
+}
+
+model EmotionalFirstAidSession {
+  id              String                     @id @default(uuid())
+  patientId       String
+  patient         PatientProfile             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  triggeredAt     DateTime                   @default(now())
+  durationSeconds Int                        @default(0)
+  techniqueUsed   EmotionalFirstAidTechnique
+  createdAt       DateTime                   @default(now())
+
+  @@map("emotional_first_aid_sessions")
+}
+
+model CaregiverQuickLog {
+  id          String           @id @default(uuid())
+  patientId   String
+  patient     PatientProfile   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  caregiverId String
+  caregiver   CaregiverProfile @relation(fields: [caregiverId], references: [id], onDelete: Cascade)
+  symptomTag  SymptomTag
+  notes       String?
+  createdAt   DateTime         @default(now())
+
+  @@map("caregiver_quick_logs")
+}
+
+model InterventionGuide {
+  id            String     @id @default(uuid())
+  triggerTag    SymptomTag @unique
+  step1         String
+  step2         String
+  step3         String
+  audioGuideUrl String?
+
+  @@map("intervention_guides")
+}

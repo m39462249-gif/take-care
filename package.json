@@ -1,0 +1,41 @@
+{
+  "name": "eje-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Eje - Plataforma accesible de tratamiento y cuidado para personas con trastornos cognitivos/mentales",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"API,WEB\" -c \"cyan,magenta\" \"npm run dev -w @eje/api\" \"npm run dev -w @eje/web\"",
+    "dev:api": "npm run dev -w @eje/api",
+    "dev:web": "npm run dev -w @eje/web",
+    "build": "npm run db:generate && npm run build -w @eje/db && npm run build -w @eje/api && npm run build -w @eje/web",
+    "build:db": "npm run build -w @eje/db",
+    "build:api": "npm run build -w @eje/api",
+    "build:web": "npm run build -w @eje/web",
+    "db:generate": "npm run generate -w @eje/db",
+    "db:push": "npm run db:push -w @eje/db",
+    "db:seed": "npm run seed -w @eje/db"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "accessibility",
+    "wcag",
+    "mental-health",
+    "cognitive-care",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "ISC",
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.25.12": true,
+    "prisma@6.19.3": true
+  }
+}

@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --canvas-bg: #FAF8F5;
+    --canvas-surface: #FFFFFF;
+    --canvas-border: #E6E0D6;
+    --text-primary: #232B28;
+    --text-secondary: #58635D;
+    --sage-primary: #345D47;
+    --sage-light: #EBF3EE;
+    --warm-focus: #345D47;
+  }
+
+  /* Accessible focus indicators for keyboard navigation - high visibility, soft contour */
+  *:focus-visible {
+    outline: 3px solid var(--warm-focus);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  /* Respect reduced motion preferences for sensory sensitive users */
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+  }
+
+  body {
+    background-color: var(--canvas-bg);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Sensory-friendly tactile utilities for TEA/Neurodivergent accessibility */
+.tea-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E6E0D6;
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-organic);
+}
+
+.tea-card-soft {
+  background-color: #F6F3ED;
+  border: 1.5px solid #E2DCD1;
+  border-radius: 1.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='48' height='48' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 48px 48px;
+}
+
+.patient-view {
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: #232B28;
+}
+
+.patient-btn {
+  min-height: 60px;
+  padding: 1rem 1.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 200ms var(--transition-organic);
+  position: relative;
+  overflow: hidden;
+}
+
+.patient-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.03) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.patient-btn:hover::before {
+  opacity: 1;
+}
+
+/* Custom calming scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F1ECE4;
+}
+::-webkit-scrollbar-thumb {
+  background: #C9C1B4;
+  border-radius: 4px;
+  transition: background 150ms ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B0A798;
+}
+
+/* Focus-visible enhancements with warm contour */
+*:focus-visible {
+  outline: 3px solid var(--warm-focus);
+  outline-offset: 3px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 3px rgba(52, 93, 71, 0.15);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+}
+
+body {
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

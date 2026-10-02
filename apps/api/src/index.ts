@@ -1,0 +1,134 @@
+import fastifyCors from "@fastify/cors";
+import fastifyJwt from "@fastify/jwt";
+import dotenv from "dotenv";
+import Fastify from "fastify";
+import { Server as SocketIOServer } from "socket.io";
+import { checkPrismaConnection } from "./db.js";
+import { authRoutes } from "./routes/auth.routes.js";
+import { routineRoutes } from "./routes/routine.routes.js";
+import { medicationRoutes } from "./routes/medication.routes.js";
+import { caregiverRoutes } from "./routes/caregiver.routes.js";
+import { firstAidRoutes } from "./routes/firstAid.routes.js";
+import { professionalRoutes } from "./routes/professional.routes.js";
+import { aiRoutes } from "./routes/ai.routes.js";
+
+dotenv.config();
+
+const port = Number(process.env.PORT) || 4000;
+const jwtSecret = process.env.JWT_SECRET || "ritmo-super-secret-jwt-key-2026";
+const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+
+const app = Fastify({
+  logger: true,
+});
+
+async function main() {
+  // Register CORS
+  await app.register(fastifyCors, {
+    origin: [
+      clientUrl,
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:5174",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  });
+
+  // Register JWT
+  await app.register(fastifyJwt, {
+    secret: jwtSecret,
+  });
+
+  // Attach Socket.io to Fastify's raw HTTP server
+  const io = new SocketIOServer(app.server, {
+    cors: {
+      origin: [
+        clientUrl,
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+      ],
+      credentials: true,
+    },
+  });
+
+  // Health check route
+  app.get("/api/health", async () => {
+    const dbConnected = await checkPrismaConnection();
+    return {
+      status: "ok",
+      platform: "Ritmo - Asistente Activo de Cuidado Diario",
+      timestamp: new Date().toISOString(),
+      database: dbConnected ? "PostgreSQL (Prisma)" : "In-Memory Dev Store",
+    };
+  });
+
+  // Register All Functional Routes
+  await app.register(authRoutes, { prefix: "/api/auth" });
+  await app.register(routineRoutes, { prefix: "/api/routines" });
+  await app.register(medicationRoutes(io), { prefix: "/api/medications" });
+  await app.register(medicationRoutes(io), { prefix: "/api/medication" }); // alias
+  await app.register(caregiverRoutes(io), { prefix: "/api/caregiver" });
+  await app.register(firstAidRoutes(io), { prefix: "/api/first-aid" });
+  await app.register(professionalRoutes, { prefix: "/api/professional" });
+  await app.register(aiRoutes, { prefix: "/api/ai" });
+
+  // Socket.io Real-time Channel Setup
+  io.on("connection", (socket) => {
+    app.log.info(`[Socket.io] Cliente conectado: ${socket.id}`);
+
+    // Join patient or caregiver specific rooms
+    socket.on("join-room", (room: string) => {
+      socket.join(room);
+      app.log.info(`[Socket.io] ${socket.id} se unió a la sala: ${room}`);
+    });
+
+    // Patient activates Emotional First Aid / Calm Mode -> notify caregiver with playbook
+    socket.on("calm-mode-activated", (data: { patientId: string; technique?: string }) => {
+      app.log.info(`[Socket.io] Modo Calma activado por paciente: ${data.patientId}`);
+      const payload = {
+        type: "CALM_MODE_TRIGGERED",
+        patientId: data.patientId,
+        technique: data.technique || "BREATHING",
+        timestamp: new Date().toISOString(),
+        message: "El paciente ha iniciado una sesión de Primeros Auxilios Emocionales (Modo Calma).",
+      };
+      io.to(`caregiver-${data.patientId}`).emit("calm-mode-alert", payload);
+      io.to("caregiver-room").emit("calm-mode-alert", payload);
+      io.emit("calm-mode-alert", payload);
+    });
+
+    // Check inactivity / missed medication manual trigger or timer
+    socket.on("check-medication-inactivity", (data: { patientId: string; scheduleId: string }) => {
+      app.log.info(`[Socket.io] Verificando inactividad de medicación para: ${data.scheduleId}`);
+      io.to("caregiver-room").emit("medication-missed-alert", {
+        type: "MEDICATION_MISSED_ALERT",
+        patientId: data.patientId,
+        scheduleId: data.scheduleId,
+        minutesOverdue: 30,
+        message: "Atención: Han transcurrido más de 30 minutos sin confirmación de la toma de medicación.",
+      });
+    });
+
+    socket.on("disconnect", () => {
+      app.log.info(`[Socket.io] Cliente desconectado: ${socket.id}`);
+    });
+  });
+
+  // Check database connectivity on boot
+  await checkPrismaConnection();
+
+  try {
+    await app.listen({ port, host: "0.0.0.0" });
+    console.log(`🚀 [Ritmo API] Servidor iniciado en http://localhost:${port}`);
+    console.log(`📡 [Socket.io] Listo para rutinas activas, drag & drop de medicación y alertas.`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+}
+
+main();
