@@ -11,6 +11,12 @@ interface AuthContextType {
   getRoleRedirectPath: (role: Role) => string;
 }
 
+// Backend API base URL. Configurable per environment via VITE_API_URL.
+const API_BASE: string = (
+  ((import.meta as any).env?.VITE_API_URL as string | undefined) ||
+  "https://ejeapi-production.up.railway.app"
+).replace(/\/+$/, "");
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function getRoleRedirectPath(role: Role): string {
@@ -39,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        const response = await fetch("/api/auth/me", {
+        const response = await fetch(`${API_BASE}/api/auth/me`, {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
@@ -76,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -108,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (payload: RegisterPayload): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
