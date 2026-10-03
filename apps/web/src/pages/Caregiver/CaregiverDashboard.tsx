@@ -6,6 +6,7 @@ import { InterventionPlaybook } from "../../components/Caregiver/InterventionPla
 import { PreventiveReminders } from "../../components/Caregiver/PreventiveReminders.js";
 import { CaregiverMedicationList } from "../../components/Caregiver/CaregiverMedicationList.js";
 import { CaregiverAIChatbot } from "../../components/Caregiver/CaregiverAIChatbot.js";
+import { DirectCaregiverClinicChat } from "../../components/DirectChat/DirectCaregiverClinicChat.js";
 import { SymptomTag, InterventionGuide, CaregiverQuickLog } from "../../types/caregiver.js";
 import { getSocket } from "../../utils/socket.js";
 import { playGentleChime } from "../../utils/audio.js";
@@ -25,6 +26,7 @@ import {
   Bot,
   Sparkles,
   LayoutDashboard,
+  MessageSquare,
 } from "lucide-react";
 
 export const CaregiverDashboard: React.FC = () => {
@@ -46,8 +48,8 @@ export const CaregiverDashboard: React.FC = () => {
 
 
 
-  // Active view tab: dashboard or AI chatbot
-  const [activeTab, setActiveTab] = useState<"dashboard" | "ai-chatbot">("dashboard");
+  // Active view tab: dashboard, ai-chatbot, or direct-chat with clinic
+  const [activeTab, setActiveTab] = useState<"dashboard" | "ai-chatbot" | "direct-chat">("dashboard");
 
   // Playbook visibility and active guide
   const [showPlaybook, setShowPlaybook] = useState(false);
@@ -283,9 +285,31 @@ export const CaregiverDashboard: React.FC = () => {
             <BookOpen className="w-4 h-4 text-[#2E5A44]" />
             <span>Guía de Consulta y Apoyo Clínico</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("direct-chat")}
+            className={`px-5 py-3 font-bold text-sm flex items-center gap-2.5 rounded-t-2xl border-t-1.5 border-l-1.5 border-r-1.5 -mb-[1.5px] transition-all ${
+              activeTab === "direct-chat"
+                ? "bg-white border-[#E6E0D6] border-b-2 border-b-white text-[#232B28] shadow-2xs"
+                : "bg-[#F3EFE9] border-transparent text-[#647068] hover:text-[#232B28]"
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 text-[#244E70]" />
+            <span>Chat en Vivo con la Clínica</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+          </button>
         </div>
 
-        {activeTab === "ai-chatbot" ? (
+        {activeTab === "direct-chat" ? (
+          /* SECCIÓN DE CHAT EN VIVO CON LA CLÍNICA */
+          <DirectCaregiverClinicChat
+            patientId={patientId}
+            patientName="Mateo Silva"
+            title="Chat en Vivo con la Dra. Sofía Martínez"
+            subtitle="Comunicación directa y segura con el equipo de psiquiatría y salud neurocognitiva."
+          />
+        ) : activeTab === "ai-chatbot" ? (
           /* SECCIÓN DE CONSULTA Y APOYO CLÍNICO */
           <CaregiverAIChatbot patientId={patientId} patientName="Mateo Silva" />
         ) : (

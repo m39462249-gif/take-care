@@ -4,11 +4,12 @@ import { Navbar } from "../../components/Navbar.js";
 import { PatientOverview } from "../../components/Clinical/PatientOverview.js";
 import { PrescriptionManager } from "../../components/Clinical/PrescriptionManager.js";
 import { ClinicalEvolutionAI } from "../../components/Clinical/ClinicalEvolutionAI.js";
-import { Stethoscope, Users, CheckCircle2, ShieldCheck, Activity, Pill, Send, Sparkles, Bot, FileText } from "lucide-react";
+import { DirectCaregiverClinicChat } from "../../components/DirectChat/DirectCaregiverClinicChat.js";
+import { Stethoscope, Users, CheckCircle2, ShieldCheck, Activity, Pill, Send, Sparkles, Bot, FileText, MessageSquare } from "lucide-react";
 
 export const ClinicalDashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"patients" | "prescriptions" | "ai-evolution">("patients");
+  const [activeTab, setActiveTab] = useState<"patients" | "prescriptions" | "ai-evolution" | "direct-chat">("patients");
   const [selectedPatientId, setSelectedPatientId] = useState("prof-pat-001");
 
   return (
@@ -149,10 +150,32 @@ export const ClinicalDashboard: React.FC = () => {
             <FileText className="w-4 h-4 text-[#244E70]" />
             <span>Síntesis de Evolución Médica</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("direct-chat")}
+            className={`py-3 px-5 text-sm font-bold flex items-center gap-2 rounded-t-2xl border-t-1.5 border-l-1.5 border-r-1.5 -mb-[1.5px] transition-all ${
+              activeTab === "direct-chat"
+                ? "border-[#E6E0D6] border-b-2 border-b-white text-[#232B28] bg-white shadow-2xs"
+                : "border-transparent text-[#647068] hover:text-[#232B28] hover:bg-[#F2ECE2]"
+            }`}
+          >
+            <MessageSquare className="w-4 h-4 text-[#2E5A44]" />
+            <span>Chat con Cuidadora</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+          </button>
         </div>
 
         {/* Tab Content */}
-        {activeTab === "patients" ? (
+        {activeTab === "direct-chat" ? (
+          /* 0. Componente DirectCaregiverClinicChat (Chat en Vivo con Cuidadora) */
+          <DirectCaregiverClinicChat
+            patientId={selectedPatientId}
+            patientName="Mateo Silva"
+            title="Chat en Vivo con la Cuidadora (Elena Silva)"
+            subtitle="Canal bidireccional y seguro de teleorientación para el seguimiento de Mateo."
+          />
+        ) : activeTab === "patients" ? (
           /* 1. Componente PatientOverview (Lista y Estado de Pacientes) */
           <PatientOverview />
         ) : activeTab === "prescriptions" ? (

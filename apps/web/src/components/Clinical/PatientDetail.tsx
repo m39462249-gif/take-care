@@ -9,8 +9,6 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  Wind,
-  Music,
   Users,
   Pill,
 } from "lucide-react";
@@ -223,47 +221,6 @@ export const PatientDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Regulation Tools (Modo Calma Usage) Summary */}
-        <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
-          <h2 className="text-2xl font-black text-slate-950 mb-2">
-            Uso de Herramientas de Regulación (Modo Calma)
-          </h2>
-          <p className="text-base text-slate-600 font-semibold mb-6">
-            Sesiones autónomas completadas por el paciente para autorregulación emocional.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="p-5 bg-teal-50 border-2 border-teal-200 rounded-2xl flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center">
-                <Wind className="w-7 h-7" />
-              </div>
-              <div>
-                <span className="text-xs font-black uppercase text-teal-800">Respiración Guiada</span>
-                <p className="text-2xl font-black text-teal-950">{stats.firstAidUsage.techniqueCounts.BREATHING} sesiones</p>
-              </div>
-            </div>
-
-            <div className="p-5 bg-sky-50 border-2 border-sky-200 rounded-2xl flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center">
-                <Music className="w-7 h-7" />
-              </div>
-              <div>
-                <span className="text-xs font-black uppercase text-sky-800">Mi Música</span>
-                <p className="text-2xl font-black text-sky-950">{stats.firstAidUsage.techniqueCounts.MUSIC} sesiones</p>
-              </div>
-            </div>
-
-            <div className="p-5 bg-purple-50 border-2 border-purple-200 rounded-2xl flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center">
-                <Users className="w-7 h-7" />
-              </div>
-              <div>
-                <span className="text-xs font-black uppercase text-purple-800">Galería Familiar</span>
-                <p className="text-2xl font-black text-purple-950">{stats.firstAidUsage.techniqueCounts.PHOTOS} sesiones</p>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Chronological Event Timeline */}
         <div className="bg-white border-2 border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">

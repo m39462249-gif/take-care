@@ -137,16 +137,32 @@ async function main() {
       io.emit("calm-mode-alert", payload);
     });
 
-    // Check inactivity / missed medication manual trigger or timer
-    socket.on("check-medication-inactivity", (data: { patientId: string; scheduleId: string }) => {
-      app.log.info(`[Socket.io] Verificando inactividad de medicación para: ${data.scheduleId}`);
-      io.to("caregiver-room").emit("medication-missed-alert", {
-        type: "MEDICATION_MISSED_ALERT",
+    // Live direct chat between Caregiver and Clinical Team
+    socket.on("send-direct-chat", (data: {
+      patientId: string;
+      senderId: string;
+      senderName: string;
+      senderRole: "CAREGIVER" | "PROFESSIONAL";
+      text: string;
+      timestamp?: string;
+    }) => {
+      const chatMessage = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         patientId: data.patientId,
-        scheduleId: data.scheduleId,
-        minutesOverdue: 30,
-        message: "Atención: Han transcurrido más de 30 minutos sin confirmación de la toma de medicación.",
-      });
+        senderId: data.senderId,
+        senderName: data.senderName,
+        senderRole: data.senderRole,
+        text: data.text,
+        timestamp: data.timestamp || new Date().toISOString(),
+      };
+      app.log.info(`[Socket.io Chat] Mensaje de ${data.senderName} (${data.senderRole}): ${data.text.substring(0, 30)}`);
+      
+      // Emit to patient specific room, caregiver room, and professional room
+      io.to(`caregiver-${data.patientId}`).emit("new-direct-chat", chatMessage);
+      io.to(`clinic-${data.patientId}`).emit("new-direct-chat", chatMessage);
+      io.to("caregiver-room").emit("new-direct-chat", chatMessage);
+      io.to("clinic-room").emit("new-direct-chat", chatMessage);
+      io.emit("new-direct-chat", chatMessage);
     });
 
     socket.on("disconnect", () => {

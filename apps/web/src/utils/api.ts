@@ -118,6 +118,36 @@ const DEFAULT_REMINDERS = [
   },
 ];
 
+const DEFAULT_CHAT_MESSAGES = [
+  {
+    id: "chat-seed-1",
+    patientId: "prof-pat-001",
+    senderId: "prof-doc-001",
+    senderName: "Dra. Sofía Martínez",
+    senderRole: "PROFESSIONAL",
+    text: "Hola Elena, revisé los registros de la bitácora de Mateo. La respuesta a la Risperidona matutina va muy bien. ¿Cómo pasó la noche?",
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+  {
+    id: "chat-seed-2",
+    patientId: "prof-pat-001",
+    senderId: "prof-cg-001",
+    senderName: "Elena Silva",
+    senderRole: "CAREGIVER",
+    text: "Hola Doctora. Tuvo un breve despertar a las 3:30 con algo de inquietud, pero aplicamos la música suave y la luz ámbar de la guía y descansó hasta las 8:00 sin problema.",
+    timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
+  },
+  {
+    id: "chat-seed-3",
+    patientId: "prof-pat-001",
+    senderId: "prof-doc-001",
+    senderName: "Dra. Sofía Martínez",
+    senderRole: "PROFESSIONAL",
+    text: "Excelente manejo con la desescalada no farmacológica. Mantendremos las dosis tal cual y estaré atenta si notas cualquier cambio en su apetito.",
+    timestamp: new Date(Date.now() - 1800000).toISOString(),
+  },
+];
+
 const INTERVENTION_GUIDES: Record<string, any> = {
   AGITATION: {
     triggerTag: "AGITATION",
@@ -249,7 +279,27 @@ export async function smartFetch(url: string, options?: RequestInit): Promise<Re
     });
   }
 
-  // 4. Caregiver: Reminders
+  // 4. Caregiver & Clinic: Live Direct Chat Messages
+  if (pathname.includes("/api/chat/messages")) {
+    const messages = getLocalState<any[]>("direct_chat_messages", DEFAULT_CHAT_MESSAGES);
+    if (method === "POST") {
+      const newMsg = {
+        id: `chat-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        patientId: body.patientId || "prof-pat-001",
+        senderId: body.senderId || "usr-current",
+        senderName: body.senderName || "Usuario",
+        senderRole: body.senderRole || "CAREGIVER",
+        text: body.text || "",
+        timestamp: new Date().toISOString(),
+      };
+      messages.push(newMsg);
+      setLocalState("direct_chat_messages", messages);
+      return mockJsonResponse({ success: true, data: newMsg });
+    }
+    return mockJsonResponse({ success: true, data: messages });
+  }
+
+  // 5. Caregiver: Reminders
   if (pathname.includes("/api/caregiver/reminders")) {
     const reminders = getLocalState("reminders", DEFAULT_REMINDERS);
     return mockJsonResponse({ success: true, data: reminders });
