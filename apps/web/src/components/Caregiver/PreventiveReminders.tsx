@@ -10,6 +10,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { PreventiveReminder } from "../../types/caregiver.js";
+import { apiUrl } from "../../utils/api.js";
 
 interface PreventiveRemindersProps {
   patientId: string;
@@ -25,7 +26,7 @@ export const PreventiveReminders: React.FC<PreventiveRemindersProps> = ({
   useEffect(() => {
     const fetchReminders = async () => {
       try {
-        const res = await fetch(`/api/caregiver/reminders?patientId=${patientId}`);
+        const res = await fetch(apiUrl(`/api/caregiver/reminders?patientId=${patientId}`));
         const data = await res.json();
         if (data.success && data.data) {
           setReminders(data.data);

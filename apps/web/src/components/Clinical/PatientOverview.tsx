@@ -11,6 +11,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { PatientOverviewItem } from "../../types/clinical.js";
+import { apiUrl } from "../../utils/api.js";
 
 export const PatientOverview: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export const PatientOverview: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const res = await fetch("/api/professional/patients");
+        const res = await fetch(apiUrl("/api/professional/patients"));
         const data = await res.json();
         if (data.success && data.data) {
           setPatients(data.data);

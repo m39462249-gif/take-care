@@ -5,6 +5,7 @@ import {
   MessageType,
   SymptomTag,
   EmotionalFirstAidTechnique,
+  seed,
 } from "@eje/db";
 import bcrypt from "bcryptjs";
 
@@ -17,6 +18,14 @@ export async function checkPrismaConnection(): Promise<boolean> {
     await prisma.$queryRaw`SELECT 1`;
     isPrismaAvailable = true;
     console.log("✅ [Database] Conectado exitosamente a PostgreSQL vía Prisma ORM.");
+    
+    // Auto-seed initial demo data if database is fresh
+    try {
+      await seed();
+    } catch (seedErr) {
+      console.warn("⚠️ [Database] Nota sobre auto-seed:", (seedErr as any)?.message || seedErr);
+    }
+
     return true;
   } catch (error) {
     isPrismaAvailable = false;

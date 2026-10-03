@@ -9,6 +9,7 @@ import { CaregiverAIChatbot } from "../../components/Caregiver/CaregiverAIChatbo
 import { SymptomTag, InterventionGuide, CaregiverQuickLog } from "../../types/caregiver.js";
 import { getSocket } from "../../utils/socket.js";
 import { playGentleChime } from "../../utils/audio.js";
+import { apiUrl } from "../../utils/api.js";
 
 import {
   HeartHandshake,
@@ -113,7 +114,7 @@ export const CaregiverDashboard: React.FC = () => {
   // Fetch initial quick logs history
   const fetchLogs = async () => {
     try {
-      const res = await fetch(`/api/caregiver/quick-logs?patientId=${patientId}`);
+      const res = await fetch(apiUrl(`/api/caregiver/quick-logs?patientId=${patientId}`));
       const data = await res.json();
       if (data.success && data.data) {
         setRecentLogs(data.data.slice(0, 5));

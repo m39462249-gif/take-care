@@ -30,6 +30,7 @@ import { PatientStats } from "../../types/clinical.js";
 import { MedicalReportGenerator } from "./MedicalReportGenerator.js";
 import { PrescriptionManager } from "./PrescriptionManager.js";
 import { Navbar } from "../Navbar.js";
+import { apiUrl } from "../../utils/api.js";
 
 export const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +41,7 @@ export const PatientDetail: React.FC = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch(`/api/professional/patients/${id || "prof-pat-001"}/stats`);
+        const res = await fetch(apiUrl(`/api/professional/patients/${id || "prof-pat-001"}/stats`));
         const data = await res.json();
         if (data.success && data.data) {
           setStats(data.data);

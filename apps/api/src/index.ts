@@ -35,6 +35,21 @@ const clientOrigins = (process.env.CLIENT_URL || "")
 
 const allowedOrigins = Array.from(new Set([...clientOrigins, ...localOrigins]));
 
+// Check if an origin is permitted (matches local dev, CLIENT_URL, or Railway deployment domains)
+function isOriginAllowed(origin?: string): boolean {
+  if (!origin) return true; // allow same-origin, curl, server-to-server or non-browser requests
+  const cleanOrigin = origin.replace(/\/+$/, "");
+
+  if (allowedOrigins.includes(cleanOrigin)) return true;
+  
+  // Allow any Railway app domain (*.up.railway.app) and local development hosts
+  if (/^https?:\/\/localhost(:\d+)?$/.test(cleanOrigin)) return true;
+  if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(cleanOrigin)) return true;
+  if (/^https:\/\/[a-zA-Z0-9_-]+\.up\.railway\.app$/.test(cleanOrigin)) return true;
+
+  return false;
+}
+
 const app = Fastify({
   logger: true,
 });
@@ -42,7 +57,13 @@ const app = Fastify({
 async function main() {
   // Register CORS
   await app.register(fastifyCors, {
-    origin: allowedOrigins,
+    origin: (origin, cb) => {
+      if (isOriginAllowed(origin)) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   });
@@ -55,21 +76,31 @@ async function main() {
   // Attach Socket.io to Fastify's raw HTTP server
   const io = new SocketIOServer(app.server, {
     cors: {
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        if (isOriginAllowed(origin)) {
+          callback(null, true);
+        } else {
+          callback(null, false);
+        }
+      },
       credentials: true,
     },
   });
 
-  // Health check route
-  app.get("/api/health", async () => {
+  // Health check routes (root for Railway default probes and /api/health)
+  const healthHandler = async () => {
     const dbConnected = await checkPrismaConnection();
     return {
       status: "ok",
-      platform: "Ritmo - Asistente Activo de Cuidado Diario",
+      platform: "Take Care (Eje Platform) - Asistente Activo de Cuidado Diario",
       timestamp: new Date().toISOString(),
       database: dbConnected ? "PostgreSQL (Prisma)" : "In-Memory Dev Store",
     };
-  });
+  };
+
+  app.get("/", healthHandler);
+  app.get("/health", healthHandler);
+  app.get("/api/health", healthHandler);
 
   // Register All Functional Routes
   await app.register(authRoutes, { prefix: "/api/auth" });
