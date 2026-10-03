@@ -18,7 +18,7 @@ import {
   Stethoscope,
   ClipboardList,
 } from "lucide-react";
-import { apiUrl } from "../../utils/api.js";
+import { apiUrl, smartFetch } from "../../utils/api.js";
 
 interface ClinicalEvolutionAIProps {
   selectedPatientId?: string;
@@ -50,7 +50,7 @@ export const ClinicalEvolutionAI: React.FC<ClinicalEvolutionAIProps> = ({
   useEffect(() => {
     const fetchInitialStats = async () => {
       try {
-        const res = await fetch(apiUrl(`/api/professional/patient-stats?patientId=${selectedPatientId}`));
+        const res = await smartFetch(apiUrl(`/api/professional/patient-stats?patientId=${selectedPatientId}`));
         const data = await res.json();
         if (data.success && data.data) {
           setStats(data.data);
@@ -69,7 +69,7 @@ export const ClinicalEvolutionAI: React.FC<ClinicalEvolutionAIProps> = ({
     setIsEditing(false);
 
     try {
-      const res = await fetch(apiUrl("/api/ai/clinical-evolution"), {
+      const res = await smartFetch(apiUrl("/api/ai/clinical-evolution"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

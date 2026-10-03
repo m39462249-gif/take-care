@@ -19,7 +19,7 @@ import {
   Info,
   Compass,
 } from "lucide-react";
-import { apiUrl } from "../../utils/api.js";
+import { apiUrl, smartFetch } from "../../utils/api.js";
 
 interface ChatMessage {
   id: string;
@@ -199,7 +199,7 @@ export const CaregiverAIChatbot: React.FC<CaregiverAIChatbotProps> = ({
           content: m.content,
         }));
 
-      const res = await fetch(apiUrl("/api/ai/chat"), {
+      const res = await smartFetch(apiUrl("/api/ai/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

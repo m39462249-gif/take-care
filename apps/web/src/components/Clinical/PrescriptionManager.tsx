@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.js";
 import { MedicationPrescription } from "../../types/clinical.js";
-import { apiUrl } from "../../utils/api.js";
+import { apiUrl, smartFetch } from "../../utils/api.js";
 
 interface PrescriptionManagerProps {
   patientId: string;
@@ -104,7 +104,7 @@ export const PrescriptionManager: React.FC<PrescriptionManagerProps> = ({
   const fetchSchedules = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(apiUrl(`/api/medications/schedules?patientId=${patientId}`));
+      const res = await smartFetch(apiUrl(`/api/medications/schedules?patientId=${patientId}`));
       const data = await res.json();
       if (data.success && data.data) {
         setSchedules(data.data);
@@ -140,7 +140,7 @@ export const PrescriptionManager: React.FC<PrescriptionManagerProps> = ({
       setIsSubmitting(true);
       setFeedbackMessage(null);
 
-      const res = await fetch(apiUrl("/api/medications/schedules"), {
+      const res = await smartFetch(apiUrl("/api/medications/schedules"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -195,7 +195,7 @@ export const PrescriptionManager: React.FC<PrescriptionManagerProps> = ({
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(apiUrl(`/api/medications/schedules/${scheduleId}`), {
+      const res = await smartFetch(apiUrl(`/api/medications/schedules/${scheduleId}`), {
         method: "DELETE",
       });
       const data = await res.json();

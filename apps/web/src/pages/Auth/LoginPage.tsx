@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext.js";
 import { Role } from "../../types/auth.js";
 
 export const LoginPage: React.FC = () => {
-  const { login, register, getRoleRedirectPath } = useAuth();
+  const { login, loginDemo, register, getRoleRedirectPath } = useAuth();
   const navigate = useNavigate();
 
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -38,33 +38,10 @@ export const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Quick Demo Logins
-  const handleQuickDemo = async (role: Role) => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    let demoEmail = "";
-    let demoPass = "";
-
-    if (role === "PATIENT") {
-      demoEmail = "paciente@eje.salud";
-      demoPass = "paciente123";
-    } else if (role === "CAREGIVER") {
-      demoEmail = "cuidador@eje.salud";
-      demoPass = "cuidador123";
-    } else {
-      demoEmail = "clinica@eje.salud";
-      demoPass = "clinica123";
-    }
-
-    const res = await login(demoEmail, demoPass);
-    setIsSubmitting(false);
-
-    if (res.success) {
-      navigate(getRoleRedirectPath(role));
-    } else {
-      setErrorMessage(res.error || "No se pudo acceder con la cuenta de prueba.");
-    }
+  // Quick Demo Logins: Instant access to Cuidador / Clínica dashboards!
+  const handleQuickDemo = (role: Role) => {
+    loginDemo(role);
+    navigate(getRoleRedirectPath(role));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,34 +113,30 @@ export const LoginPage: React.FC = () => {
           <div className="mb-6 p-4 bg-[#F7F4EE] border border-[#E6E0D6] rounded-2xl">
             <div className="flex items-center gap-2 mb-1.5 text-[#232B28] font-bold text-sm">
               <Shield className="w-4 h-4 text-[#2E5A44]" aria-hidden="true" />
-              <span>Accesos Rápidos de Demostración</span>
+              <span>Accesos Rápidos Directos (Modo Autónomo Instantáneo)</span>
             </div>
             <p className="text-xs text-[#57645E] mb-3">
-              Selecciona un perfil para ingresar directamente y explorar la experiencia:
+              Haz clic para ingresar inmediatamente al dashboard con datos clínicos y asistente IA activos:
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => handleQuickDemo("CAREGIVER")}
-                disabled={isSubmitting}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-[#EBF3EE] text-[#232B28] font-bold border border-[#E6E0D6] hover:border-[#2E5A44] rounded-xl text-xs transition-all shadow-xs min-h-[44px]"
-                aria-label="Acceder como Cuidador de prueba: Elena"
+                className="flex items-center justify-center gap-2.5 px-4 py-3 bg-[#2E5A44] hover:bg-[#254A37] text-white font-bold rounded-2xl text-sm transition-all shadow-sm min-h-[48px] cursor-pointer"
+                aria-label="Acceder como Cuidador: Elena Silva"
               >
-                <HeartHandshake className="w-3.5 h-3.5 text-[#2E5A44]" aria-hidden="true" />
-                <span>Cuidador</span>
+                <HeartHandshake className="w-4 h-4 text-emerald-200" aria-hidden="true" />
+                <span>Panel de Cuidador (Elena)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleQuickDemo("PROFESSIONAL")}
-                disabled={isSubmitting}
-                className="flex items-center justify-center gap-2 px-3 py-2.5 bg-white hover:bg-[#EBF3EE] text-[#232B28] font-bold border border-[#E6E0D6] hover:border-[#2E5A44] rounded-xl text-xs transition-all shadow-xs min-h-[44px]"
-                aria-label="Acceder como Profesional Clínico de prueba: Dra. Sofía"
+                className="flex items-center justify-center gap-2.5 px-4 py-3 bg-[#244E70] hover:bg-[#1D3E59] text-white font-bold rounded-2xl text-sm transition-all shadow-sm min-h-[48px] cursor-pointer"
+                aria-label="Acceder como Profesional Clínico: Dra. Sofía"
               >
-                <Stethoscope className="w-3.5 h-3.5 text-[#2E5A44]" aria-hidden="true" />
-                <span>Clínica</span>
+                <Stethoscope className="w-4 h-4 text-sky-200" aria-hidden="true" />
+                <span>Portal Clínico (Dra. Sofía)</span>
               </button>
             </div>
           </div>

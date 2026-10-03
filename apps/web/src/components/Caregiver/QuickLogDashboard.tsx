@@ -14,7 +14,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { SymptomTag } from "../../types/caregiver.js";
-import { apiUrl } from "../../utils/api.js";
+import { apiUrl, smartFetch } from "../../utils/api.js";
 
 interface QuickLogDashboardProps {
   patientId: string;
@@ -188,7 +188,7 @@ export const QuickLogDashboard: React.FC<QuickLogDashboardProps> = ({
         });
       }
 
-      const res = await fetch(apiUrl("/api/caregiver/quick-log"), {
+      const res = await smartFetch(apiUrl("/api/caregiver/quick-log"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

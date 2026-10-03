@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, Role, RegisterPayload, AuthResponse } from "../types/auth.js";
-import { apiUrl } from "../utils/api.js";
+import { apiUrl, smartFetch } from "../utils/api.js";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginDemo: (role: Role) => void;
   register: (payload: RegisterPayload) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   getRoleRedirectPath: (role: Role) => string;
@@ -40,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       try {
-        const response = await fetch(apiUrl("/api/auth/me"), {
+        const response = await smartFetch(apiUrl("/api/auth/me"), {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
@@ -77,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(apiUrl("/api/auth/login"), {
+      const response = await smartFetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -140,6 +141,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginDemo = (role: Role) => {
+    let demoUser: User;
+    if (role === "CAREGIVER") {
+      demoUser = {
+        id: "cg-demo-001",
+        email: "cuidador@eje.salud",
+        role: "CAREGIVER",
+        fullName: "Elena Silva",
+        profileId: "prof-cg-001",
+      };
+    } else if (role === "PROFESSIONAL") {
+      demoUser = {
+        id: "doc-demo-001",
+        email: "clinica@eje.salud",
+        role: "PROFESSIONAL",
+        fullName: "Dra. Sofía Martínez",
+        profileId: "prof-doc-001",
+      };
+    } else {
+      demoUser = {
+        id: "pat-demo-001",
+        email: "paciente@eje.salud",
+        role: "PATIENT",
+        fullName: "Mateo Silva",
+        profileId: "prof-pat-001",
+      };
+    }
+
+    const demoToken = "autonomous-demo-token-2026";
+    setUser(demoUser);
+    setToken(demoToken);
+    localStorage.setItem("eje_token", demoToken);
+    localStorage.setItem("eje_user", JSON.stringify(demoUser));
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -154,6 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isLoading,
         login,
+        loginDemo,
         register,
         logout,
         getRoleRedirectPath,

@@ -16,7 +16,7 @@ import {
 import { getSocket } from "../../utils/socket.js";
 import { playGentleChime } from "../../utils/audio.js";
 import { MedicationPrescription } from "../../types/clinical.js";
-import { apiUrl } from "../../utils/api.js";
+import { apiUrl, smartFetch } from "../../utils/api.js";
 
 interface CaregiverMedicationListProps {
   patientId: string;
@@ -45,7 +45,7 @@ export const CaregiverMedicationList: React.FC<CaregiverMedicationListProps> = (
 
   const fetchSchedules = async () => {
     try {
-      const res = await fetch(apiUrl(`/api/medications/schedules?patientId=${patientId}`));
+      const res = await smartFetch(apiUrl(`/api/medications/schedules?patientId=${patientId}`));
       const data = await res.json();
       if (data.success && data.data) {
         setSchedules(data.data);
@@ -123,7 +123,7 @@ export const CaregiverMedicationList: React.FC<CaregiverMedicationListProps> = (
   const handleManualConfirm = async (scheduleId: string, medName: string) => {
     try {
       playGentleChime();
-      const res = await fetch(apiUrl("/api/medications/log"), {
+      const res = await smartFetch(apiUrl("/api/medications/log"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
